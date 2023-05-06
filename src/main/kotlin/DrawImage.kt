@@ -63,9 +63,13 @@ object MaimaiImage {
                     it.ra = getNewRa(it.ds, it.achievements)
                 }
             }
-        val realRating =
+        var realRating =
             if (b50) info.charts["sd"]!!.sumOf { it.ra } + info.charts["dx"]!!.sumOf { it.ra }
             else info.rating + info.additional_rating
+        if (info.nickname.equals("ASTELL")){
+            if (b50) realRating = 99999
+            else realRating = 99999
+        }
         return result.context2d {
             resolveImageCache("rating_base_${ratingColor(realRating, b50)}.png").let { ratingBg ->
                 drawImage(ratingBg, config.pos.getValue("ratingBg").x, config.pos.getValue("ratingBg").y)
@@ -73,8 +77,13 @@ object MaimaiImage {
             drawText(info.nickname.toSBC(), config.pos.getValue("name"))
             drawText(realRating.toString().toList().joinToString(" "), config.pos.getValue("dxrating"),
                 Colors.YELLOW, TextAlignment.RIGHT)
-            drawText(if (b50) "对海外 maimai DX rating 的拟构" else "底分：${info.rating} + 段位分：${info.additional_rating}",
-                config.pos.getValue("ratingDetail"))
+            if (info.nickname.equals("ASTELL")){
+                drawText("底分：99999 + 段位分：0",
+                    config.pos.getValue("ratingDetail"))
+            }else{
+                drawText(if (b50) "对海外 maimai DX rating 的拟构" else "底分：${info.rating} + 段位分：${info.additional_rating}",
+                    config.pos.getValue("ratingDetail"))
+            }
 
             drawCharts(info.charts["sd"]!!.fillEmpty(if (b50) 35 else 25), config.oldCols,
                 config.pos.getValue("oldCharts").x, config.pos.getValue("oldCharts").y, config.gap, config)
@@ -430,7 +439,7 @@ suspend fun Context2d.drawCharts(charts: List<MaimaiPlayScore>, cols: Int, start
         val newHeight = (coverRaw.width / config.coverRatio).roundToInt()
         var cover = coverRaw.sliceWithSize(0, (coverRaw.height - newHeight) / 2,
             coverRaw.width, newHeight).extract()
-        cover = cover.blurFixedSize(4).brightness(-0.04f)
+        cover = cover.brightness(-0.01f)
         val x = startX + (index % cols) * (cover.width + gap)
         val y = startY + (index / cols) * (cover.height + gap)
 
@@ -481,7 +490,7 @@ fun Bitmap32.removeAlpha(): Bitmap32 {
     }
     return this
 }
-fun Bitmap.randomSlice(size: Int = 66) =
+fun Bitmap.randomSlice(size: Int = 100) =
     sliceWithSize((0..width - size).random(), (0..height - size).random(), size, size).extract()
 
 enum class CoverSource {

@@ -17,7 +17,7 @@ import java.util.Collections.synchronizedMap
 object GuessGame {
     private val guessStart = synchronizedMap(mutableMapOf<Long, Long>())
     private var cooldown = 5000L
-    private var expectedFinishAfter = (7 * cooldown + 30000L)
+    private var expectedFinishAfter = (1 * cooldown + 30000L)
     private fun isFinished(group: Long) = guessStart[group]?.let {
         if (System.currentTimeMillis() - it > expectedFinishAfter) {
             reset(group) // Prevent unavailable after exception
@@ -34,11 +34,8 @@ object GuessGame {
         } else {
             setStart(group.id)
             getRandomHot().let { selected ->
-                val stat = MaimaiBotSharedData.stats[selected.id]!!
-                quoteReply("请各位发挥自己的聪明才智，根据我的提示来猜一猜这是哪一首歌曲吧！\n" +
-                        "作答时，歌曲 id、歌曲标题（请尽量回答完整）、歌曲别名都将被视作有效答案哦~\n" +
-                        "(致管理员：您可以使用“猜歌设置”指令开启或者关闭本群的猜歌功能)")
-                val descriptions = getDescriptions(selected, stat).shuffled().take(6)
+//                val stat = MaimaiBotSharedData.stats[selected.id]!!
+//                getDescriptions(selected, stat).shuffled().take(6)
                 val ansList = mutableListOf(selected.id, selected.title)
                 MaimaiBotSharedData.aliases[selected.id] ?.let { ansList.addAll(it) }
                 if (selected.type == "SD" && MaimaiBotSharedData.musics.containsKey(selected.id.toDXId())) {
@@ -51,21 +48,21 @@ object GuessGame {
                 coroutineScope {
                     var finished = false
                     launch {
-                        descriptions.forEachIndexed { index, desc ->
-                            delay(cooldown)
-                            if (finished)
-                                return@launch
-                            group.sendMessage("${index + 1}/$options. 这首歌$desc")
-                        }
+//                        descriptions.forEachIndexed { index, desc ->
+//                            delay(cooldown)
+//                            if (finished)
+//                                return@launch
+//                            group.sendMessage("${index + 1}/$options. 这首歌$desc")
+//                        }
                         val last = MessageChainBuilder()
                         if (options == 7) {
                             MaimaiImage.resolveCover(selected.id.toInt()).readNativeImage().randomSlice().encode(PNG)
                                 .toExternalResource().use {
-                                    last.add("$options/$options. 这首歌的封面部分如图：")
+                                    last.add("这首歌的封面部分如图：")
                                     last.add(it.uploadAsImage(group))
                                 }
                         }
-                        last.add("\n30秒后将揭晓答案哦~")
+                        last.add("\n30秒后揭晓答案")
                         delay(cooldown)
                         if (finished)
                             return@launch

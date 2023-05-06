@@ -339,7 +339,7 @@ object MaimaiBot : KotlinPlugin(
                         }
                     }
                 }
-                startsWith(withPrefix("猜歌")) {
+                startsWith(withPrefix("猜曲绘")) {
                     notDenied(denied) {
                         notDenied(deniedGuess) {
                             GuessGame.handle(this)
@@ -433,8 +433,22 @@ object MaimaiBot : KotlinPlugin(
                 MaimaiImage.generateBest(result.second!!, b50).toExternalResource().use { img ->
                     quoteReply(img.uploadAsImage(subject))
                 }
+                var realRating =
+                    if (b50) result.second!!.charts["sd"]!!.sumOf { it.ra } + result.second!!.charts["dx"]!!.sumOf { it.ra }
+                    else result.second!!.rating
+                if (id.equals("484894005")){
+                    if (b50) realRating = 15000
+                    else realRating = 10348
+                }
+                if (realRating >= 14000 || !b50 && realRating >= 6000){
+                    if (id.equals("484894005")){
+                        quoteReply("我超, 我是乌蒙大神!")
+                    }else{
+                        quoteReply("我超, 乌蒙大神!")
+                    }
+                }
             }
-            HttpStatusCode.BadRequest -> quoteReply("您的QQ未绑定查分器账号或所查询的用户名不存在，请确认用户名对应的玩家在 Diving-Fish 的舞萌 DX 查分器" +
+            HttpStatusCode.BadRequest -> quoteReply("未绑定查分器账号或用户名不存在，请确认用户名对应的玩家在 Diving-Fish 的舞萌 DX 查分器" +
                     "（https://www.diving-fish.com/maimaidx/prober/）上已注册")
             HttpStatusCode.Forbidden -> quoteReply("该玩家已禁止他人查询成绩")
         }
